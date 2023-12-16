@@ -8,6 +8,7 @@ public class BoidsFollowLeader : IState
     Boid _me;
     
     List<Boid> _boids;
+    List<Boid> _enemyTeam;
     Transform _leader;
     Vector3 _velocity;
     float _maxVelocity;
@@ -17,7 +18,7 @@ public class BoidsFollowLeader : IState
     float _viewAngle;
     float _separationRadius;
 
-    public BoidsFollowLeader(FSM fsm, Boid me, List<Boid> boids, Transform leader, Vector3 velocity, float maxVelocity, float maxForce, Transform transform, float viewRadius, float viewAngle, float separationRadius)
+    public BoidsFollowLeader(FSM fsm, Boid me, List<Boid> boids, Transform leader, Vector3 velocity, float maxVelocity, float maxForce, Transform transform, float viewRadius, float viewAngle, float separationRadius, List<Boid> enemyTeam)
     {
         _fsm = fsm;
         _me = me;
@@ -30,6 +31,7 @@ public class BoidsFollowLeader : IState
         _viewRadius = viewRadius;
         _viewAngle = viewAngle;
         _separationRadius = separationRadius;
+        _enemyTeam = enemyTeam;
     }
 
     public void OnEnter()
@@ -46,7 +48,7 @@ public class BoidsFollowLeader : IState
     {
         LeaderFollowing();
 
-        foreach(Boid boid in GameManager.Instance.minionsEnemigos)
+        foreach(Boid boid in _enemyTeam)
         {
             if (InFOV(boid.transform))
                 _me.SetTarget(boid.transform);

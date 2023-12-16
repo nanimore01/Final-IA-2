@@ -208,9 +208,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 889a35d3a5d64d048b4cd69236be46cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _grupo: 0
+  _hp: 0
+  _hpMax: 0
+  _renderer: {fileID: 4982624764357819694}
   _maxVelocity: 1
   _maxForce: 1
-  _renderer: {fileID: 4982624764357819694}
   _viewRadius: 1
   _viewAngle: 1
+  damage: 2
+  Cooldown: 2
+  _grupo: 0
+  _separationRadius: 0.2
+  path: []

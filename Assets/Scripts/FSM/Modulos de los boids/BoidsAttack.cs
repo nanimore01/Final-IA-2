@@ -7,7 +7,10 @@ public class BoidsAttack : IState
 {
     FSM _fsm;
 
-    Transform _transform, _target;
+    Boid _me;
+
+    Transform _transform;
+
     
     Vector3 _velocity;
     float _maxVelocity;
@@ -16,11 +19,11 @@ public class BoidsAttack : IState
     float _viewAngle;
     float _vida;
 
-    public BoidsAttack(FSM fsm, Transform transform, Transform target, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida)
+    public BoidsAttack(FSM fsm, Transform transform, Boid me, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida)
     {
         _fsm = fsm;
         _transform = transform;
-        _target = target;
+        _me = me;
         _velocity = velocity;
         _maxVelocity = maxVelocity;
         _maxForce = maxForce;
@@ -41,12 +44,12 @@ public class BoidsAttack : IState
 
     public void OnUpdate()
     {
-        AddForce(Seek(_target.position));
+        AddForce(Seek(_me.enemys.transform.position));
 
         _transform.position += _velocity * Time.deltaTime;
         _transform.forward = _velocity;
 
-        if (InFOV(_target) == false)
+        if (InFOV(_me.enemys.transform) == false)
             _fsm.ChangeState("Follow leader");
 
         if (_vida > 0)
