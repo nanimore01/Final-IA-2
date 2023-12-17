@@ -18,8 +18,8 @@ public class Entity : MonoBehaviour
     [SerializeField] protected float _viewRadius;
     [SerializeField] protected float _viewAngle;
     [Header("Daño")]
-    [SerializeField] protected int damage;
-    [SerializeField] protected int Cooldown;
+    [SerializeField] protected int _damage;
+    [SerializeField] protected float _cooldown;
     
     public void TakeDamage(int damage)
     {

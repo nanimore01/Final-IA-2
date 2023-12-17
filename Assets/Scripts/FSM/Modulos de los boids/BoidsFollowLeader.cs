@@ -18,6 +18,9 @@ public class BoidsFollowLeader : IState
     float _viewAngle;
     float _separationRadius;
 
+    
+
+
     public BoidsFollowLeader(FSM fsm, Boid me, List<Boid> boids, Transform leader, Vector3 velocity, float maxVelocity, float maxForce, Transform transform, float viewRadius, float viewAngle, float separationRadius, List<Boid> enemyTeam)
     {
         _fsm = fsm;
@@ -36,7 +39,7 @@ public class BoidsFollowLeader : IState
 
     public void OnEnter()
     {
-        
+        Debug.Log("Te sigo");
     }
 
     public void OnExit()
@@ -50,9 +53,13 @@ public class BoidsFollowLeader : IState
 
         foreach(Boid boid in _enemyTeam)
         {
+            
             if (InFOV(boid.transform))
+            {
                 _me.SetTarget(boid.transform);
                 _fsm.ChangeState("Attack");
+            }
+            
         }
     }
 

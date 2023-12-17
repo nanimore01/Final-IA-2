@@ -1,44 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using TMPro.EditorUtilities;
 using UnityEngine;
 
-public class BoidsAttack : IState
+public class BoidsGoToBase : IState
 {
     FSM _fsm;
-
-    Boid _me;
-
     Transform _transform;
-
-    
+    Boid _me;
+    Nodo _base;
+    List<Nodo> _path;
     Vector3 _velocity;
     float _maxVelocity;
     float _maxForce;
     float _viewRadius;
     float _viewAngle;
-    float _vida;
-    int _dmg;
-    float _cooldownTime;
-    float _currCooldown;
-    public BoidsAttack(FSM fsm, Transform transform, Boid me, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida, float cooldownTime)
+    List<Boid> _enemyTeam;
+
+    public BoidsGoToBase(FSM fsm, Transform transform, Nodo wbase, List<Nodo> path, Vector3 velocity, float maxVelocity, float maxForce, Boid me, List<Boid> enemyTeam)
     {
         _fsm = fsm;
         _transform = transform;
-        _me = me;
+        _base = wbase;
+        _path = path;
         _velocity = velocity;
         _maxVelocity = maxVelocity;
         _maxForce = maxForce;
-        _viewRadius = viewRadius;
-        _viewAngle = viewAngle;
-        _vida = vida;
-        _cooldownTime = cooldownTime;
-        
+        _me = me;
+        _enemyTeam = enemyTeam;
     }
 
     public void OnEnter()
     {
-        Debug.Log("Atacar");
+        SetPath(GameManager.Instance.CalculateThetaStar(GameManager.Instance.GetMinNode(_transform.position), _base ));
     }
 
     public void OnExit()
@@ -48,33 +42,48 @@ public class BoidsAttack : IState
 
     public void OnUpdate()
     {
-        AddForce(Seek(_me.enemys.transform.position));
+        if (_path.Count > 0)
+        {
+            var dir = _path[0].transform.position - _transform.position;
+
+            AddForce(Seek(_path[0].transform.position));
+
+            if (dir.magnitude <= 0.5f)
+            {
+                _path.RemoveAt(0);
+            }
+        }
 
         _transform.position += _velocity * Time.deltaTime;
         _transform.forward = _velocity;
 
-        if (InFOV(_me.enemys.transform) == false)
-            _fsm.ChangeState("Follow leader");
-
-        if (_vida > 0)
-            _fsm.ChangeState("Escape");
-            
-        if (Vector3.Distance(_transform.position,_me.enemys.transform.position) <= 0.5f)
+        if( _path.Count == 0 )
         {
-            _currCooldown += Time.deltaTime;
-
-            if(_currCooldown > _cooldownTime)
-            {
-                _currCooldown = 0;
-                _me.enemys.GetComponent<Boid>().TakeDamage(_dmg);
-            }
-            
+            _fsm.ChangeState("Healing");
         }
 
+        foreach (Boid boid in _enemyTeam)
+        {
+            if (InFOV(boid.transform))
+            {
+                _me.SetTarget(boid.transform);
+                _fsm.ChangeState("Escape");
+            }
+        }
 
     }
 
-    
+    public void SetPath(List<Nodo> newPath)
+    {
+
+        _path.Clear();
+
+        foreach (var item in newPath)
+        {
+
+            _path.Add(item);
+        }
+    }
 
     Vector3 Seek(Vector3 dir)
     {

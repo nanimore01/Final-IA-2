@@ -1,44 +1,39 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class BoidsAttack : IState
+public class BoidsEscape : IState
 {
     FSM _fsm;
 
     Boid _me;
 
     Transform _transform;
-
-    
     Vector3 _velocity;
     float _maxVelocity;
     float _maxForce;
     float _viewRadius;
     float _viewAngle;
-    float _vida;
-    int _dmg;
-    float _cooldownTime;
-    float _currCooldown;
-    public BoidsAttack(FSM fsm, Transform transform, Boid me, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida, float cooldownTime)
+    Renderer _renderer;
+    
+    public BoidsEscape(FSM fsm, Boid me, Transform transform, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, Renderer renderer)
     {
         _fsm = fsm;
-        _transform = transform;
         _me = me;
+        _transform = transform;
         _velocity = velocity;
         _maxVelocity = maxVelocity;
         _maxForce = maxForce;
         _viewRadius = viewRadius;
         _viewAngle = viewAngle;
-        _vida = vida;
-        _cooldownTime = cooldownTime;
-        
+        _renderer = renderer;
+
     }
 
     public void OnEnter()
     {
-        Debug.Log("Atacar");
+        _renderer.material.color = Color.black;
     }
 
     public void OnExit()
@@ -48,33 +43,17 @@ public class BoidsAttack : IState
 
     public void OnUpdate()
     {
-        AddForce(Seek(_me.enemys.transform.position));
+        AddForce(Flee(_me.enemys.transform.position));
 
         _transform.position += _velocity * Time.deltaTime;
         _transform.forward = _velocity;
 
         if (InFOV(_me.enemys.transform) == false)
-            _fsm.ChangeState("Follow leader");
+            _fsm.ChangeState("Go to base");
 
-        if (_vida > 0)
-            _fsm.ChangeState("Escape");
-            
-        if (Vector3.Distance(_transform.position,_me.enemys.transform.position) <= 0.5f)
-        {
-            _currCooldown += Time.deltaTime;
-
-            if(_currCooldown > _cooldownTime)
-            {
-                _currCooldown = 0;
-                _me.enemys.GetComponent<Boid>().TakeDamage(_dmg);
-            }
-            
-        }
-
+        
 
     }
-
-    
 
     Vector3 Seek(Vector3 dir)
     {
@@ -94,6 +73,12 @@ public class BoidsAttack : IState
 
         _velocity = Vector3.ClampMagnitude(_velocity, _maxVelocity);
     }
+
+    Vector3 Flee(Vector3 dir)
+    {
+        return -Seek(dir);
+    }
+
     public bool InFOV(Transform obj)
     {
         var dir = obj.position - _transform.position;

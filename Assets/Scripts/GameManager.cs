@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     
     public Enemigo enemigo;
 
+    
+
     public List<Boid> minionsAliados;
     public List<Boid> minionsEnemigos;
 
