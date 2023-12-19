@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro.EditorUtilities;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public class BoidsGoToBase : IState
+public class EnemigoBackToBase : IState
 {
     FSM _fsm;
     Transform _transform;
-    Boid _me;
     Nodo _base;
     List<Nodo> _path;
     Vector3 _velocity;
@@ -15,24 +14,23 @@ public class BoidsGoToBase : IState
     float _maxForce;
     float _viewRadius;
     float _viewAngle;
-    List<Boid> _enemyTeam;
-
-    public BoidsGoToBase(FSM fsm, Transform transform, Nodo wbase, List<Nodo> path, Vector3 velocity, float maxVelocity, float maxForce, Boid me, List<Boid> enemyTeam)
-    {
+    
+    public EnemigoBackToBase(FSM fsm, Transform transform, Nodo baseDeEquipo, List<Nodo> path, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle)
+    { 
         _fsm = fsm;
         _transform = transform;
-        _base = wbase;
         _path = path;
         _velocity = velocity;
         _maxVelocity = maxVelocity;
         _maxForce = maxForce;
-        _me = me;
-        _enemyTeam = enemyTeam;
+        _viewRadius = viewRadius;
+        _viewAngle = viewAngle;
+    
     }
 
     public void OnEnter()
     {
-        SetPath(GameManager.Instance.CalculateThetaStar(GameManager.Instance.GetMinNode(_transform.position), _base ));
+        SetPath(GameManager.Instance.CalculateThetaStar(GameManager.Instance.GetMinNode(_transform.position), _base));
     }
 
     public void OnExit()
@@ -61,11 +59,19 @@ public class BoidsGoToBase : IState
 
         _transform.position += _velocity * Time.deltaTime;
         _transform.forward = _velocity;
-        if ( _path.Count == 0 )
+
+        if (_path.Count == 0)
         {
-            _fsm.ChangeState("Healing");
+            if(GameManager.Instance.enemigo.hp <= 0)
+            {
+                _fsm.ChangeState("Healing");
+            }
+            else
+            {
+                _fsm.ChangeState("Patrol");
+            }
+                
         }
-        
     }
 
     public void SetPath(List<Nodo> newPath)

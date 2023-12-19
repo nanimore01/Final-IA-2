@@ -9,17 +9,21 @@ using UnityEngine.UIElements;
 public class Jugador : Entity
 {
     [Header("Stats de jugador")]
-    [SerializeField] LayerMask _lm;
+    [SerializeField] LayerMask _lm, _enemy;
     public List<Nodo> path;
     public GameObject target;
 
     void Start()
     {
+        hp = _hpMax;
+
         _fsm = new FSM();
 
         _fsm.CreateState("Walk", new JugadorWalk(_fsm, target, _velocity, _maxVelocity, _maxForce, transform));
         _fsm.CreateState("Idle", new JugadorIdle(_fsm));
         _fsm.CreateState("Go to path", new JugadorGoPath(_fsm, path, transform, _velocity, _maxVelocity, _maxForce, this, target));
+        _fsm.CreateState("Attack", new JugadorAttack(_fsm, this, transform, _velocity, _maxVelocity, _maxForce, _viewRadius, _viewAngle, _damage, _cooldown));
+
 
         _fsm.ChangeState("Idle");
     }
@@ -36,21 +40,25 @@ public class Jugador : Entity
 
             if (Physics.Raycast(ray, out hit, _lm))
             {
-                
+
                 target.transform.position = hit.point;
                 target.SetActive(true);
 
-                if(GameManager.Instance.InLineOfSight(transform.position, target.transform.position))
+                if (GameManager.Instance.InLineOfSight(transform.position, target.transform.position))
                 {
                     _fsm.ChangeState("Walk");
                 }
                 else
                 {
-                    
+
                     _fsm.ChangeState("Go to path");
                 }
             }
+            
+            
         }
+
+
     }
     public void SetPath(List<Nodo> newPath)
     {

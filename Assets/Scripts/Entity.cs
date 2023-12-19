@@ -7,7 +7,7 @@ public class Entity : MonoBehaviour
     protected FSM _fsm;
 
     [Header("Vida")]
-    [SerializeField]protected int _hp;
+    [SerializeField]public int hp;
     [SerializeField]protected int _hpMax;
     [SerializeField]protected Renderer _renderer;
     [Header("Movimiento")]
@@ -23,6 +23,16 @@ public class Entity : MonoBehaviour
     
     public void TakeDamage(int damage)
     {
-        _hp -= damage;
+        hp -= damage;
+        StartCoroutine(CambioDeColores());
+    }
+
+    public IEnumerator CambioDeColores()
+    {
+        _renderer.material.color = Color.white;
+        yield return new WaitForSeconds(0.1f);
+        _renderer.material.color = Color.red;
+        yield return new WaitForSeconds(0.1f);
+        _renderer.material.color = Color.white;
     }
 }

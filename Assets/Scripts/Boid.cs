@@ -18,12 +18,12 @@ public class Boid : Entity
 
     void Start()
     {
-        _hp = _hpMax;
+        hp = _hpMax;
         switch(_grupo)
         {
             case 0:
                 GameManager.Instance.minionsAliados.Add(this);
-                _renderer.material.color = Color.green;
+                
                 _leader = GameManager.Instance.pj.transform;
                 _team = GameManager.Instance.minionsAliados;
                 _enemyTeam = GameManager.Instance.minionsEnemigos;
@@ -31,7 +31,7 @@ public class Boid : Entity
                 break;
             case 1:
                 GameManager.Instance.minionsEnemigos.Add(this);
-                _renderer.material.color = Color.red;
+                
                 _leader = GameManager.Instance.enemigo.transform;
                 _team = GameManager.Instance.minionsEnemigos;
                 _enemyTeam = GameManager.Instance.minionsAliados;
@@ -42,9 +42,9 @@ public class Boid : Entity
         _fsm = new FSM();
 
         _fsm.CreateState("Follow leader", new BoidsFollowLeader(_fsm, this, _team, _leader, _velocity, _maxVelocity, _maxForce, transform, _viewRadius, _viewAngle, _separationRadius, _enemyTeam));
-        _fsm.CreateState("Attack", new BoidsAttack(_fsm, transform, this, _velocity, _maxVelocity, _maxForce, _viewRadius, _viewAngle, _hp, _cooldown));
+        _fsm.CreateState("Attack", new BoidsAttack(_fsm, transform, this, _velocity, _maxVelocity, _maxForce, _viewRadius, _viewAngle, hp, _cooldown, _damage, _enemyTeam));
         _fsm.CreateState("Go to base", new BoidsGoToBase(_fsm, transform, baseDeEquipo, path, _velocity, _maxVelocity, _maxForce, this, _enemyTeam));
-        _fsm.CreateState("Escape", new BoidsEscape(_fsm, this, transform, _velocity, _maxVelocity, _maxForce, _viewRadius, _viewAngle, _renderer));
+        _fsm.CreateState("Go to path", new BoidsGetPath(_fsm, _leader, _velocity, _maxVelocity, _maxForce, transform, path));
         _fsm.CreateState("Healing", new BoidsHealing(_fsm, this, _renderer, color));
         
 
@@ -55,7 +55,15 @@ public class Boid : Entity
     void Update()
     {
         _fsm.Execute();
+
+        if (hp <= 0)
+        {
+            
+            _fsm.ChangeState("Go to base");
+            _renderer.material.color = Color.black;
+        }
     }
+
 
     public void SetTarget(Transform target)
     {

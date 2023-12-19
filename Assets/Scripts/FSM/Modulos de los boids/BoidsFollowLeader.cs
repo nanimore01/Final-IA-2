@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class BoidsFollowLeader : IState
@@ -35,11 +36,12 @@ public class BoidsFollowLeader : IState
         _viewAngle = viewAngle;
         _separationRadius = separationRadius;
         _enemyTeam = enemyTeam;
+        
     }
 
     public void OnEnter()
     {
-        Debug.Log("Te sigo");
+        
     }
 
     public void OnExit()
@@ -49,12 +51,21 @@ public class BoidsFollowLeader : IState
 
     public void OnUpdate()
     {
-        LeaderFollowing();
+        if (GameManager.Instance.InLineOfSight(_transform.position,_leader.position))
+        {
+            LeaderFollowing();
+            
+        }
+        else
+        {
+            _fsm.ChangeState("Go to path");
+        }
+        
 
         foreach(Boid boid in _enemyTeam)
         {
             
-            if (InFOV(boid.transform))
+            if (InFOV(boid.transform) && boid.hp > 0)
             {
                 _me.SetTarget(boid.transform);
                 _fsm.ChangeState("Attack");
@@ -150,4 +161,5 @@ public class BoidsFollowLeader : IState
 
         return false;
     }
+    
 }

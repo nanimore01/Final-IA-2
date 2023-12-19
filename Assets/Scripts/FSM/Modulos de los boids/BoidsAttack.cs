@@ -11,7 +11,7 @@ public class BoidsAttack : IState
 
     Transform _transform;
 
-    
+    List<Boid> _enemyTeam;
     Vector3 _velocity;
     float _maxVelocity;
     float _maxForce;
@@ -21,7 +21,7 @@ public class BoidsAttack : IState
     int _dmg;
     float _cooldownTime;
     float _currCooldown;
-    public BoidsAttack(FSM fsm, Transform transform, Boid me, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida, float cooldownTime)
+    public BoidsAttack(FSM fsm, Transform transform, Boid me, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida, float cooldownTime, int dmg, List<Boid> enemyTeam)
     {
         _fsm = fsm;
         _transform = transform;
@@ -33,12 +33,13 @@ public class BoidsAttack : IState
         _viewAngle = viewAngle;
         _vida = vida;
         _cooldownTime = cooldownTime;
-        
+        _dmg = dmg;
+        _enemyTeam = enemyTeam;
     }
 
     public void OnEnter()
     {
-        Debug.Log("Atacar");
+        
     }
 
     public void OnExit()
@@ -48,17 +49,10 @@ public class BoidsAttack : IState
 
     public void OnUpdate()
     {
-        AddForce(Seek(_me.enemys.transform.position));
-
-        _transform.position += _velocity * Time.deltaTime;
-        _transform.forward = _velocity;
-
         if (InFOV(_me.enemys.transform) == false)
+        {
             _fsm.ChangeState("Follow leader");
-
-        if (_vida > 0)
-            _fsm.ChangeState("Escape");
-            
+        }   
         if (Vector3.Distance(_transform.position,_me.enemys.transform.position) <= 0.5f)
         {
             _currCooldown += Time.deltaTime;
@@ -70,7 +64,24 @@ public class BoidsAttack : IState
             }
             
         }
+        else
+        {
+            AddForce(Seek(_me.enemys.transform.position));
 
+            _transform.position += _velocity * Time.deltaTime;
+            _transform.forward = _velocity;
+        }
+        
+        if(_me.enemys.GetComponent<Boid>().hp <= 0)
+        {
+            foreach (Boid boid in _enemyTeam)
+            {
+                if (InFOV(boid.transform) && boid.hp > 0)
+                {
+                    _me.SetTarget(boid.transform);
+                }
+            }
+        }
 
     }
 

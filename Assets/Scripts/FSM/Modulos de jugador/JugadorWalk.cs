@@ -51,6 +51,11 @@ public class JugadorWalk : IState
             _target.SetActive(false);
             _fsm.ChangeState("Idle");
         }
+
+        if(Vector3.Distance(_transform.position, GameManager.Instance.enemigo.transform.position) <= 0.5f)
+        {
+            _fsm.ChangeState("Attack");
+        }
     }
 
     Vector3 Seek(Vector3 dir)

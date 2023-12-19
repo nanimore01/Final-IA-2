@@ -1,37 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class EnemigoPatrol : IState
+public class EnemigoAttack : IState
 {
     FSM _fsm;
 
-    Nodo[] _patrol;
+    Enemigo _me;
+
+    Transform _transform;
+
+    
     Vector3 _velocity;
     float _maxVelocity;
     float _maxForce;
-    Transform _transform;
-    int _currWaypoint = 0;
-
     float _viewRadius;
     float _viewAngle;
+    float _vida;
+    int _dmg;
+    float _cooldownTime;
+    float _currCooldown;
 
-    public EnemigoPatrol(FSM fsm, Nodo[] patrol, Vector3 velocity, float maxVelocity, float maxForce, Transform transform, float viewRadius, float viewAngle)
+    public EnemigoAttack(FSM fsm, Enemigo me, Transform transform, Vector3 velocity, float maxVelocity, float maxForce, float viewRadius, float viewAngle, float vida, int dmg, float cooldownTime)
     {
         _fsm = fsm;
-        _patrol = patrol;
+        _me = me;
+        _transform = transform;
         _velocity = velocity;
         _maxVelocity = maxVelocity;
         _maxForce = maxForce;
-        _transform = transform;
         _viewRadius = viewRadius;
         _viewAngle = viewAngle;
+        _vida = vida;
+        _dmg = dmg;
+        _cooldownTime = cooldownTime;
+        
     }
 
     public void OnEnter()
     {
-        
+        Debug.Log("A atacar");
     }
 
     public void OnExit()
@@ -41,31 +49,39 @@ public class EnemigoPatrol : IState
 
     public void OnUpdate()
     {
-        AddForce(Seek(_patrol[_currWaypoint].transform.position));
 
-        if (Vector3.Distance(_patrol[_currWaypoint].transform.position, _transform.position) <= 0.5f)
+        if (Vector3.Distance(_transform.position, GameManager.Instance.pj.transform.position) <= 0.5f)
         {
-            _currWaypoint++;
+            _currCooldown += Time.deltaTime;
 
-            if (_currWaypoint >= _patrol.Length)
-                _currWaypoint = 0;
+            if (_currCooldown > _cooldownTime)
+            {
+                _currCooldown = 0;
+                GameManager.Instance.pj.TakeDamage(_dmg);
+            }
+
+        }
+        else
+        {
+            AddForce(Seek(GameManager.Instance.pj.transform.position));
+
+            _transform.position += _velocity * Time.deltaTime;
+            _transform.forward = _velocity;
         }
 
-        _transform.position += _velocity * Time.deltaTime;
-        _transform.forward = _velocity;
+        if (GameManager.Instance.pj.hp <= 0 || !InFOV(GameManager.Instance.pj.transform))
+        {
+            _fsm.ChangeState("Go to base");
+        }
 
-        if (InFOV(GameManager.Instance.pj.transform))
-            _fsm.ChangeState("Attack");
-
+        
     }
-
     void AddForce(Vector3 dir)
     {
         _velocity += dir;
 
         _velocity = Vector3.ClampMagnitude(_velocity, _maxVelocity);
     }
-
     Vector3 Seek(Vector3 dir)
     {
         var desired = dir - _transform.position;
