@@ -12,6 +12,7 @@ public class Jugador : Entity
     [SerializeField] LayerMask _lm, _enemy;
     public List<Nodo> path;
     public GameObject target;
+    public Nodo baseDeEquipo;
 
     void Start()
     {
@@ -54,10 +55,13 @@ public class Jugador : Entity
                     _fsm.ChangeState("Go to path");
                 }
             }
-            
-            
+
         }
 
+        if (Vector3.Distance(transform.position, baseDeEquipo.transform.position) <= 0.5f && hp < _hpMax)
+        {
+            TakeDamage(-20);
+        }
 
     }
     public void SetPath(List<Nodo> newPath)

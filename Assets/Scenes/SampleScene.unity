@@ -296,6 +296,7 @@ MonoBehaviour:
     m_Bits: 128
   path: []
   target: {fileID: 564986909}
+  baseDeEquipo: {fileID: 30802786}
 --- !u!1 &140788955
 GameObject:
   m_ObjectHideFlags: 0
